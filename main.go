@@ -3,24 +3,20 @@ package main
 import (
 	"log"
 
+	"gogo/internal/database"
 	"gogo/internal/pet"
 	"gogo/internal/user"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("gogo.db?_foreign_keys=on"), &gorm.Config{})
+	db, err := database.InitSQLite()
 	if err != nil {
-		log.Fatalf("open sqlite database: %v", err)
+		log.Fatalf("initialize SQLite database: %v", err)
 	}
 
-	err = db.AutoMigrate(
-		&user.User{},
-		&pet.Pet{},
-	)
+	err = database.Migrate(db)
 	if err != nil {
 		log.Fatalf("migrate database: %v", err)
 	}
