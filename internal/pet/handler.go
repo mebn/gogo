@@ -28,6 +28,9 @@ func (h *Handler) RegisterRoutes(router gin.IRouter) {
 	pets.POST("", h.createPet)
 	pets.GET("/:id", h.getPet)
 	pets.PUT("/:id", h.updatePet)
+
+	users := router.Group("/users")
+	users.GET("/:id/pets", h.getPetsByOwner)
 }
 
 func (h *Handler) createPet(c *gin.Context) {
@@ -92,11 +95,26 @@ func (h *Handler) updatePet(c *gin.Context) {
 	c.JSON(http.StatusOK, pet)
 }
 
+func (h *Handler) getPetsByOwner(c *gin.Context) {
+	id, ok := parseID(c)
+	if !ok {
+		return
+	}
+
+	pets, err := h.service.ListByOwner(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch pets"})
+		return
+	}
+
+	c.JSON(http.StatusOK, pets)
+}
+
 func parseID(c *gin.Context) (uint, bool) {
 	rawID := c.Param("id")
 	id, err := strconv.ParseUint(rawID, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid pet id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return 0, false
 	}
 
