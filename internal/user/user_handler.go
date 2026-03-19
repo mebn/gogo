@@ -2,8 +2,8 @@ package user
 
 import (
 	"errors"
+	"gogo/internal/common"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -30,9 +30,8 @@ func (h *Handler) RegisterRoutes(router gin.IRouter) {
 }
 
 func (h *Handler) createUser(c *gin.Context) {
-	var payload userRequest
-	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	payload, ok := common.BindJSON[userRequest](c)
+	if !ok {
 		return
 	}
 
@@ -46,7 +45,7 @@ func (h *Handler) createUser(c *gin.Context) {
 }
 
 func (h *Handler) getUser(c *gin.Context) {
-	id, ok := parseID(c)
+	id, ok := common.ParseID(c)
 	if !ok {
 		return
 	}
@@ -66,14 +65,13 @@ func (h *Handler) getUser(c *gin.Context) {
 }
 
 func (h *Handler) updateUser(c *gin.Context) {
-	id, ok := parseID(c)
+	id, ok := common.ParseID(c)
 	if !ok {
 		return
 	}
 
-	var payload userRequest
-	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	payload, ok := common.BindJSON[userRequest](c)
+	if !ok {
 		return
 	}
 
@@ -89,15 +87,4 @@ func (h *Handler) updateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
-}
-
-func parseID(c *gin.Context) (uint, bool) {
-	rawID := c.Param("id")
-	id, err := strconv.ParseUint(rawID, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
-		return 0, false
-	}
-
-	return uint(id), true
 }

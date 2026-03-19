@@ -2,8 +2,8 @@ package pet
 
 import (
 	"errors"
+	"gogo/internal/common"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -34,9 +34,8 @@ func (h *Handler) RegisterRoutes(router gin.IRouter) {
 }
 
 func (h *Handler) createPet(c *gin.Context) {
-	var payload petRequest
-	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	payload, ok := common.BindJSON[petRequest](c)
+	if !ok {
 		return
 	}
 
@@ -50,7 +49,7 @@ func (h *Handler) createPet(c *gin.Context) {
 }
 
 func (h *Handler) getPet(c *gin.Context) {
-	id, ok := parseID(c)
+	id, ok := common.ParseID(c)
 	if !ok {
 		return
 	}
@@ -70,14 +69,13 @@ func (h *Handler) getPet(c *gin.Context) {
 }
 
 func (h *Handler) updatePet(c *gin.Context) {
-	id, ok := parseID(c)
+	id, ok := common.ParseID(c)
 	if !ok {
 		return
 	}
 
-	var payload petRequest
-	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	payload, ok := common.BindJSON[petRequest](c)
+	if !ok {
 		return
 	}
 
@@ -96,7 +94,7 @@ func (h *Handler) updatePet(c *gin.Context) {
 }
 
 func (h *Handler) getPetsByOwner(c *gin.Context) {
-	id, ok := parseID(c)
+	id, ok := common.ParseID(c)
 	if !ok {
 		return
 	}
@@ -108,15 +106,4 @@ func (h *Handler) getPetsByOwner(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, pets)
-}
-
-func parseID(c *gin.Context) (uint, bool) {
-	rawID := c.Param("id")
-	id, err := strconv.ParseUint(rawID, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
-		return 0, false
-	}
-
-	return uint(id), true
 }
