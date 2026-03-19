@@ -3,27 +3,37 @@ package main
 import (
 	"log"
 
-	"github.com/gin-gonic/gin"
+	"gogo/internal/pet"
 	"gogo/internal/user"
+
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("gogo.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("gogo.db?_foreign_keys=on"), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("open sqlite database: %v", err)
 	}
 
-	if err := db.AutoMigrate(&user.User{}); err != nil {
+	err = db.AutoMigrate(
+		&user.User{},
+		&pet.Pet{},
+	)
+	if err != nil {
 		log.Fatalf("migrate database: %v", err)
 	}
 
-	service := user.NewService(db)
-	handler := user.NewHandler(service)
-
 	router := gin.Default()
-	handler.RegisterRoutes(router)
+
+	userService := user.NewService(db)
+	userHandler := user.NewHandler(userService)
+	userHandler.RegisterRoutes(router)
+
+	petService := pet.NewService(db)
+	petHandler := pet.NewHandler(petService)
+	petHandler.RegisterRoutes(router)
 
 	if err := router.Run(":8080"); err != nil {
 		log.Fatalf("run server: %v", err)
