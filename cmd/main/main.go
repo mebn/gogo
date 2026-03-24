@@ -31,7 +31,7 @@ func main() {
 	petHandler := pet.NewHandler(petService)
 	petHandler.RegisterRoutes(router)
 
-	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(":1337"); err != nil {
 		log.Fatalf("run server: %v", err)
 	}
 }

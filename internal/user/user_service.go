@@ -2,12 +2,6 @@ package user
 
 import "gorm.io/gorm"
 
-type User struct {
-	ID   uint   `json:"id" gorm:"primaryKey"`
-	Name string `json:"name"`
-	Age  uint   `json:"age"`
-}
-
 type Service struct {
 	db *gorm.DB
 }
