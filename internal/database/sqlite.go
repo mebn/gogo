@@ -1,8 +1,9 @@
 package database
 
 import (
+	"gogo/internal/auth"
 	"gogo/internal/pet"
-	"os/user"
+	"gogo/internal/user"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -22,6 +23,7 @@ func InitSQLite() (*gorm.DB, error) {
 
 func Migrate(db *gorm.DB) error {
 	err := db.AutoMigrate(
+		&auth.RefreshToken{},
 		&user.User{},
 		&pet.Pet{},
 	)

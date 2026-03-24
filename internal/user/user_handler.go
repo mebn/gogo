@@ -24,24 +24,8 @@ func NewHandler(service *Service) *Handler {
 
 func (h *Handler) RegisterRoutes(router gin.IRouter) {
 	users := router.Group("/users")
-	users.POST("", h.createUser)
 	users.GET("/:id", h.getUser)
 	users.PUT("/:id", h.updateUser)
-}
-
-func (h *Handler) createUser(c *gin.Context) {
-	payload, ok := common.BindJSON[userRequest](c)
-	if !ok {
-		return
-	}
-
-	user, err := h.service.Create(payload.Name, *payload.Age)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, user)
 }
 
 func (h *Handler) getUser(c *gin.Context) {

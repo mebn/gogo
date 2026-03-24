@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"gogo/internal/auth"
 	"gogo/internal/database"
 	"gogo/internal/pet"
 	"gogo/internal/user"
@@ -22,14 +23,19 @@ func main() {
 	}
 
 	router := gin.Default()
+	apiRoute := router.Group("/api/v1")
+
+	authService := auth.NewService(db)
+	authHandler := auth.NewHandler(authService)
+	authHandler.RegisterRoutes(apiRoute)
 
 	userService := user.NewService(db)
 	userHandler := user.NewHandler(userService)
-	userHandler.RegisterRoutes(router)
+	userHandler.RegisterRoutes(apiRoute)
 
 	petService := pet.NewService(db)
 	petHandler := pet.NewHandler(petService)
-	petHandler.RegisterRoutes(router)
+	petHandler.RegisterRoutes(apiRoute)
 
 	if err := router.Run(":1337"); err != nil {
 		log.Fatalf("run server: %v", err)
