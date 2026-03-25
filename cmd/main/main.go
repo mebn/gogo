@@ -29,13 +29,16 @@ func main() {
 	authHandler := auth.NewHandler(authService)
 	authHandler.RegisterRoutes(apiRoute)
 
+	protectedApiRoute := apiRoute.Group("")
+	protectedApiRoute.Use(authService.RequireAuthenticatedUser())
+
 	userService := user.NewService(db)
 	userHandler := user.NewHandler(userService)
-	userHandler.RegisterRoutes(apiRoute)
+	userHandler.RegisterRoutes(protectedApiRoute)
 
 	petService := pet.NewService(db)
 	petHandler := pet.NewHandler(petService)
-	petHandler.RegisterRoutes(apiRoute)
+	petHandler.RegisterRoutes(protectedApiRoute)
 
 	if err := router.Run(":1337"); err != nil {
 		log.Fatalf("run server: %v", err)

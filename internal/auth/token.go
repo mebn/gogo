@@ -114,6 +114,23 @@ func (s *Service) parseRefreshToken(token string) (*tokenClaims, error) {
 	return claims, nil
 }
 
+func (s *Service) parseAccessToken(token string) (*tokenClaims, error) {
+	claims, err := s.parseJWT(token)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims.Type != "access" {
+		return nil, errInvalidJWT
+	}
+
+	if claims.Subject == "" {
+		return nil, errInvalidJWT
+	}
+
+	return claims, nil
+}
+
 func (s *Service) parseJWT(token string) (*tokenClaims, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
